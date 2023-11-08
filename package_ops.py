@@ -120,7 +120,9 @@ if __name__ == "__main__":
     args_parser.add_argument(
         "--encrypt",
         help="Encrypt model",
-        action="store_true",
+        type=int,
+        choices=[0, 1],
+        default=0,
     )
     args = args_parser.parse_args()
 
