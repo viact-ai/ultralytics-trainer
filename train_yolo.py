@@ -2,6 +2,7 @@ import os
 
 from clearml import Dataset, Task
 from ultralytics import YOLO
+from utils.clearml_utils import download_model
 
 
 def get_model_name_from_choice(model_name: str, model_variant: str) -> str:
@@ -104,7 +105,7 @@ def get_dataset_from_storage(dataset_id: str) -> str:
     dataset = Dataset.get(dataset_id=dataset_id)
 
     dataset_dir = os.path.join(os.getcwd(), "datasets")
-    folderpath = os.path.join(dataset_dir,dataset.name)
+    folderpath = os.path.join(dataset_dir, dataset.name)
 
     from ultralytics import settings
     settings.update({'datasets_dir': dataset_dir})
@@ -130,6 +131,7 @@ def train_yolo(
         batch_size: int = 16,
         imgsz: int = 640,
         epochs: int = 10,
+        pretrained_model_id: str = None
 ) -> None:
 
     # yaml_filepath = get_dataset_zip_from_storage(dataset_id=dataset_id)
@@ -137,8 +139,12 @@ def train_yolo(
 
     print(f"Dataset is stored at {yaml_filepath}")
     print("Complete prepared dataset, continue to training the model...")
-
-    model = YOLO(f"{model_version}.pt")
+    model_path = f"{model_version}.pt"
+    if pretrained_model_id is not None:
+        pretrained_model_path = download_model(model_id=pretrained_model_id)
+        model_path = pretrained_model_path
+    print("Model_path", model_path)
+    model = YOLO(model_path)
     model.train(
         data=yaml_filepath,
         imgsz=imgsz,
@@ -153,6 +159,9 @@ if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument(
         "--dataset_id", default="yolov5s", help="ClearML dataset id"
+    )
+    args.add_argument(
+        "--pretrained_model_id", default=None, help="ClearML pretained mopdel id"
     )
     args.add_argument(
         "--model_version", default="yolov5s", help="Model version"
@@ -188,4 +197,5 @@ if __name__ == "__main__":
         model_version=args.model_version,
         batch_size=args.batch_size,
         imgsz=args.imgsz,
-        epochs=args.epochs)
+        epochs=args.epochs,
+        pretrained_model_id=args.pretrained_model_id)
