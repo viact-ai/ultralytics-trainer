@@ -7,7 +7,7 @@ from utils.clearml_utils import download_model
 from utils.security import encrypt_model
 
 
-def export_to_onnx(model_path: str, format: str = 'onnx', imgsz: str = 640) -> str:
+def export_to_onnx(model_path: str, format: str = 'onnx', imgsz: int = 640) -> str:
     '''
     Ultralytics ONNX args: imgsz, half, dynamic, simplify, opset
     Reference to the document for more details
