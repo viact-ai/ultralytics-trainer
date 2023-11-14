@@ -4,6 +4,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 from typing import Union
+import os
 
 from clearml import Task
 
@@ -22,7 +23,7 @@ def label_list_to_txt(label_list: list[str], labels_txt_path: Path) -> None:
 
 
 def get_default_config(
-    config_path: Path,
+    config_path: list[Path],
     imgsz: list = [640, 640],
     model_arch: str = "yolov5s",
     module: str = ModuleType.DANGER_ZONE,
@@ -46,8 +47,9 @@ def get_default_config(
 
     default_config.alerts.alert_string = DEFAULT_ALERT_STRING[module]
 
-    with open(config_path, "w") as f:
-        json.dump(default_config.to_dict(), f, indent=4)
+    for path in config_path:
+        with open(path, "w") as f:
+            json.dump(default_config.to_dict(), f, indent=4)
 
 
 def default_engine_config(
@@ -97,6 +99,7 @@ def package_ops(
         Return: zip_filepath, zip_filepath
             full_path, filename
     '''
+    artifact_config = Path("./default_config.json")
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
 
@@ -119,7 +122,7 @@ def package_ops(
         elif isinstance(imgsz, tuple) or isinstance(imgsz, list):
             imgsz = list(imgsz)
 
-        get_default_config(config_path=config_path,
+        get_default_config(config_path=[config_path, artifact_config],
                            imgsz=imgsz,
                            model_arch=model_arch,
                            module=module
@@ -134,7 +137,7 @@ def package_ops(
             zipf.write(onnx_model_filepath,
                        arcname=f"weights/best.onnx")
 
-        return str(zip_filepath.absolute()), str(zip_filepath), config_path
+        return str(zip_filepath.absolute()), str(zip_filepath), artifact_config
 
 
 if __name__ == "__main__":
@@ -236,3 +239,5 @@ if __name__ == "__main__":
         print("Complete upload package to clearML server")
     else:
         print("Current clearML task not found, will not sync artifact to clearML")
+    os.system(f"rm -rf {config_path}")
+
