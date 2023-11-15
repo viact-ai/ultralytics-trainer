@@ -180,7 +180,7 @@ if __name__ == "__main__":
         default=0,
     )
     args_parser.add_argument(
-        "--module",
+        "--ai_module",
         help="Module type",
         type=str,
         default="danger-zone",
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         label_list=args.label_list,
         model_path=onnx_model_path,
         imgsz=args.imgsz,
-        module=args.module
+        module=args.ai_module
     )
     print(f"Package stored at: {name} {zip_filepath}")
 
@@ -240,4 +240,3 @@ if __name__ == "__main__":
     else:
         print("Current clearML task not found, will not sync artifact to clearML")
     os.system(f"rm -rf {config_path}")
-
