@@ -108,7 +108,7 @@ def get_dataset_from_storage(dataset_id: str) -> str:
         zip_file = None
         if len(zip_files):
             zip_file = zip_files[0]
-            os.system(f"unzip {zip_file} -d {folder_path}")
+            os.system(f"unzip \"{zip_file}\" -d \"{folder_path}\"")
 
         return zip_file
 
