@@ -9,10 +9,15 @@ class BaseType(str, Enum):
 
     def __str__(self):
         return str(self.value)
-    
+
+
 class ModuleType(BaseType):
     DANGER_ZONE = "danger-zone"
     SAFETY_HELMET = "safety-helmet"
+    HOOK_DETECTION = "hook-detection"
+    SAFETY_VEST_DETECTION = "safety-vest-detection"
+    MACHINERY_MOTION = "machinery-motion"
+    ANTI_COLLISION = "anti-collision"
 
 
 class ModelingType(BaseType):

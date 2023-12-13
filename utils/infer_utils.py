@@ -19,11 +19,12 @@ if str(WS_ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 WS_ROOT = Path(os.path.relpath(WS_ROOT, Path.cwd()))
 
+AVAILABLE_MODULES = [str(module.value) for module in ModuleType]
+
 
 def load_default_config(module: str):
     config_path = None
-    if module in [ModuleType.DANGER_ZONE,
-                  ModuleType.SAFETY_HELMET]:
+    if module in AVAILABLE_MODULES:
         config_path = os.path.join(ROOT, "configs", "detection.json")
     else:
         print("Not support modeling type {}".format(module))
