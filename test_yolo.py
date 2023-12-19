@@ -41,7 +41,7 @@ def test_yolo(
     metrics = model.val(
         data=yaml_filepath,
         imgsz=imgsz,
-        batch_size=batch_size
+        batch=batch_size
     )
     report_metrics(metrics)
 
