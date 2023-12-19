@@ -1,58 +1,19 @@
-import os 
-from ultralytics import YOLO 
+import os
+from ultralytics import YOLO
 from clearml import Dataset
+from clearml.task import Task
 
 
-from utils.clearml_utils import download_model
-
-
-
-def get_dataset_from_storage(dataset_id: str) -> str:
-    """
-            ```
-        yolov5/
-            temp/
-                {dataset_name}.zip     
-            datasets/ <- NOTE: this is requried in ultraalytics config 
-                {dataset_name}/    
-                    train/
-                    test/
-                    val/
-                    *.yaml -> return filepath of *.yaml
-        ```
-    """
-    from pathlib import Path
-
-    def _get_yaml_files(folder_path: str) -> list[Path]:
-        folder_path = Path(folder_path)
-        yaml_files = folder_path.glob("*.yaml")
-        return list(yaml_files)
-
-    dataset = Dataset.get(dataset_id=dataset_id)
-
-    dataset_dir = os.path.join(os.getcwd(), "datasets")
-    folderpath = os.path.join(dataset_dir,dataset.name) 
-
-    os.makedirs(dataset_dir, exist_ok=True)
-    os.makedirs(folderpath, exist_ok=True)
-
-    dataset.get_mutable_local_copy(
-        target_folder=folderpath,
-        overwrite=True
-    )
-
-    # Assumpe there only 1 *.yaml file
-    yaml_filepath: Path = _get_yaml_files(folderpath)[0]
-    yaml_filepath: str = str(yaml_filepath.absolute())
-
-    return yaml_filepath
-
+from utils.clearml_utils import download_model, get_dataset_from_storage
+from utils.ultralytics import parse_metrics, report_metrics
 
 
 def test_yolo(
     dataset_id: str,
     model_id: str,
-) -> None: 
+    batch_size: int,
+    imgsz: int,
+) -> None:
     """
     Sample output: ultralytics.utils.metrics.DetMetrics object with attributes:
     ```
@@ -76,29 +37,46 @@ def test_yolo(
 
     model_path = download_model(model_id)
     model = YOLO(model_path)
-    
+
     metrics = model.val(
         data=yaml_filepath,
+        imgsz=imgsz,
+        batch_size=batch_size
     )
+    report_metrics(metrics)
 
- 
-    return metrics 
-
+    return metrics
 
 
 if __name__ == "__main__":
     import argparse
     args = argparse.ArgumentParser()
     args.add_argument(
-        "--dataset_id", default="yolov5s", help="ClearML dataset id"
+        "--dataset_id", default=None, help="ClearML dataset id",
     )
     args.add_argument(
         "--model_id", help="Model from ClearML Registry", type=str, default=None
     )
+    args.add_argument(
+        "--model_id", help="Model from ClearML Registry", type=str, default=None
+    )
+    args.add_argument(
+        "--model_arch",
+        help="Model type",
+        type=str,
+    )
+    args.add_argument(
+        "--batch_size", default=16, type=int, help="Batch size"
+    )
+    args.add_argument(
+        "--imgsz", default=640, help="Image size", type=int,
+    )
 
     args = args.parse_args()
-    
+
     test_yolo(
         dataset_id=args.dataset_id,
         model_id=args.model_id,
+        imgsz=args.imgsz,
+        batch_size=args.batch_size
     )
