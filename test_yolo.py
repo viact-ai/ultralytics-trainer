@@ -58,9 +58,6 @@ if __name__ == "__main__":
         "--model_id", help="Model from ClearML Registry", type=str, default=None
     )
     args.add_argument(
-        "--model_id", help="Model from ClearML Registry", type=str, default=None
-    )
-    args.add_argument(
         "--model_arch",
         help="Model type",
         type=str,
