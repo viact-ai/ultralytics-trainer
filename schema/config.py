@@ -87,7 +87,17 @@ class ModelingDefaultConfig(BaseModel):
     def __init__(self,
                  model: ModelingConfig = None,
                  alerts: AlertConfig = None,
-                 exp: ExperimentConfig = None):
+                 exp: ExperimentConfig = None,
+                 algorithm: dict = None):
         self.model = ModelingConfig(**model)
         self.alerts = AlertConfig(**alerts)
         self.exp = ExperimentConfig(**exp)
+        self.algorithm = algorithm
+        self.alow_change = {
+            "inference": [
+                "conf_thres",
+                "iou_thres",
+                "max_det"
+            ],
+            "algorithm": []
+        }

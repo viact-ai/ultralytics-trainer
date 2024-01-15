@@ -239,4 +239,5 @@ if __name__ == "__main__":
         print("Complete upload package to clearML server")
     else:
         print("Current clearML task not found, will not sync artifact to clearML")
-    os.system(f"rm -rf {config_path}")
+    # print(config_path)
+    # os.system(f"rm -rf {config_path}")
