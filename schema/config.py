@@ -93,7 +93,7 @@ class ModelingDefaultConfig(BaseModel):
         self.alerts = AlertConfig(**alerts)
         self.exp = ExperimentConfig(**exp)
         self.algorithm = algorithm
-        self.alow_change = {
+        self.allow_change = {
             "inference": [
                 "conf_thres",
                 "iou_thres",
