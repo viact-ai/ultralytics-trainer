@@ -134,7 +134,7 @@ def get_configs(ai_module: ModuleType,
         )
         alert_str = DEFAULT_ALERT_STRING[ai_module]
     elif ai_module == ModuleType.PERSON_NEAR_FENCE:
-        algo_config = OpenEdgeParam(
+        algo_config = PersonNearFenceParam(
             classes=Classes(person=classes.index(str(BaseClasses.PERSON)),
                             canvas=classes.index(str(BaseClasses.CANVAS)),
                             fence=classes.index(str(BaseClasses.FENCE)),
