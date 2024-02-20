@@ -73,7 +73,8 @@ def export_to_onnx(model_path: str, format: str = 'onnx', imgsz: int = 640) -> s
     output_name = model.export(
         format=format,
         imgsz=imgsz,
-        dynamic=True
+        dynamic=True,
+        opset=12
     )
     names = model.names
     print(f"ONNX model stored at: {output_name}")
