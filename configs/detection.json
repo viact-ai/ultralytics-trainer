@@ -1,0 +1,34 @@
+{
+    "model": {
+        "arch": "yolov5",
+        "size": "s",
+        "type": "object_detection",
+        "train": {},
+        "inference": {
+            "imgsz": [
+                640,
+                640
+            ],
+            "conf_thres": 0.45,
+            "iou_thres": 0.45,
+            "max_det": 300,
+            "device": "0",
+            "classes": [
+                0
+            ],
+            "agnostic_nms": false,
+            "line_thickness": 3,
+            "hide_labels": false,
+            "hide_conf": false,
+            "half": false,
+            "use_tensorrt_model": false,
+            "use_trt_with_onnx": false
+        }
+    },
+    "alerts": {
+        "alert_string": ""
+    },
+    "exp": {
+        "exp": "./exp"
+    }
+}

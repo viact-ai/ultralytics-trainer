@@ -164,3 +164,4 @@ temp/*
 runs/*
 *.pt
 *.onnx
+data/*
