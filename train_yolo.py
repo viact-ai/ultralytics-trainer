@@ -126,20 +126,20 @@ if __name__ == "__main__":
         "--epochs", default=10, help="Epochs", type=int,
     )
 
-    args.add_argument(
-        "--project", default="YOLOv5", help="ClearML Project Name",
-    )
-    args.add_argument(
-        "--name", default="Train YOLOv5", help="ClearML Task name",
-    )
+    # args.add_argument(
+    #     "--project", default="YOLOv5", help="ClearML Project Name",
+    # )
+    # args.add_argument(
+    #     "--name", default="Train YOLOv5", help="ClearML Task name",
+    # )
 
     args = args.parse_args()
 
     task = Task.current_task()
     if task is None:
         task = Task.init(
-            project_name=args.project,
-            task_name=args.name,
+            project_name=args.model_version,
+            task_name="Train " + args.model_version,
         )
 
     train_yolo(
