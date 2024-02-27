@@ -93,7 +93,7 @@ def export_to_onnx(model_paths: Dict[str, str],
         model = YOLO(model=model_path)
         img_size = imgsz
         if model.task == "classify":
-            img_size == 224,
+            img_size = 224
         output_name = model.export(
             format=format,
             imgsz=img_size,

@@ -6,7 +6,7 @@ class DangerZoneParam(BaseModel):
 
 
 class LiftingLoadDangerZoneParam(BaseModel):
-    version: str | None = None
+    version: str | None = "v2"
     project_classes: list | None = None
     alert_classes: list | None = None
     MAX_ADJUSTED_POINTS_RETIAN: int | None = 5
