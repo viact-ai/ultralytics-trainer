@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Union
+from typing import Dict, Union, Any
 
 
 def get_value(defined_type: Enum,
@@ -55,6 +55,18 @@ class ModelingType(BaseType):
     CLASSIFICATION = "classification"
 
 
+class YOLOTasks(BaseType):
+    DETECT = "detect"
+    SEGMENT = "segment"
+    CLASSIFY = "classify"
+
+
+MAPPING_YOLO_TASK_TO_MODELING: Dict[Any, Any] = {
+    YOLOTasks.DETECT: ModelingType.OBJECT_DETECTION,
+    YOLOTasks.SEGMENT: ModelingType.INSTANCE_SEGMENTATION,
+    YOLOTasks.CLASSIFY: ModelingType.CLASSIFICATION
+}
+
 MAPPING_MODULE_TO_MODELING: Dict[str, str] = {
     ModuleType.DANGER_ZONE: ModelingType.OBJECT_DETECTION,
     ModuleType.NO_HELMET_DETECTION: ModelingType.OBJECT_DETECTION,
@@ -85,10 +97,13 @@ DEFAULT_ALERT_STRING: Dict[str, Union[str, dict]] = {
 MODULE_CLASSES = {
     ModuleType.DANGER_ZONE: [BaseClasses.PERSON
                              ],
-    ModuleType.LIFTING_LOAD_DANGER_ZONE: [
+    ModuleType.LIFTING_LOAD_DANGER_ZONE:
+    {"detect": [
         BaseClasses.PERSON,
         BaseClasses.HOOK,
     ],
+        "classify": ["0", "1"]
+    },
     ModuleType.OPEN_EDGE: [
         BaseClasses.PERSON,
         BaseClasses.CANVAS,
