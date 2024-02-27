@@ -12,16 +12,18 @@ import utils.export as export_utils
 
 def parse_pairs(pairs):
     params = {}
-    for pair in pairs:
-        key, value = pair.split('=')
-        params[key] = value
+    if pairs is not None:
+        for pair in pairs:
+            key, value = pair.split('=')
+            params[key] = value
     return params
 
 
 def parse_list(params):
     values = []
-    for value in params:
-        values.append(value.split(","))
+    if params is not None:
+        for value in params:
+            values.append(value.split(","))
     return values
 
 
