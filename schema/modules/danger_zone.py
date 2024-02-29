@@ -14,7 +14,7 @@ class LiftingLoadDangerZoneParam(BaseModel):
     PROJECTIONS_HEIGHT: int | None = 150
     DEVIDE_VALUE: int | None = 2
 
-    WIDTH_RATIO_THRESHOLD: float = 3  # for distance filter out
+    WIDTH_RATIO_THRESHOLD: float = 4  # for distance filter out
     CLASSIFY_CONFIDENCE_THRESHOLD: float = 0.5
     BOX_POSTPROCESSING_IOU_THRESHOLD: float = 0.2
 
