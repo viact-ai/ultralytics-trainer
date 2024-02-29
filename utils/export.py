@@ -250,7 +250,7 @@ def get_main_model(ai_module: ModuleType,
             yolo_task = get_value(YOLOTasks, model_info["task"])
             modeling_type = MAPPING_YOLO_TASK_TO_MODELING[yolo_task]
             if MAPPING_MODULE_TO_MODELING[ai_module] == modeling_type:
-                main_model_id == model_id
+                main_model_id = model_id
                 break
     return main_model_id
 
