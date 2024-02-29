@@ -69,7 +69,6 @@ if __name__ == "__main__":
         models = [ModelInfo(**model) for model in model_dict]
 
     model_infos = export_utils.export_to_onnx(models=models)
-    module_config = None
 
     if args.encrypt:
         # Encrypt model
@@ -85,7 +84,6 @@ if __name__ == "__main__":
         version=args.version,
         module=args.ai_module,
         model_infos=model_infos,
-        module_config=module_config,
     )
 
     task = Task.current_task()
