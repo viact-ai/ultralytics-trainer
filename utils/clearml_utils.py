@@ -1,5 +1,6 @@
 from clearml import Model, Dataset
 import os
+from typing import List, Dict
 
 
 def download_model(model_id: str) -> str:
@@ -69,4 +70,3 @@ def get_dataset_from_storage(dataset_id: str) -> str:
     yaml_filepath: str = str(yaml_filepath.absolute())
 
     return yaml_filepath
-

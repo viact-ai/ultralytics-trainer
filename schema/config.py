@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from pydantic import BaseModel
 
@@ -29,6 +29,8 @@ class ModelConfig(BaseModel):
     type: ModelingType = None
     inference: InferenceConfig = None
     size: Optional[str] = None
+    weight_path: str = None
+    label_path: str = None
 
 
 class AllowChange(BaseModel):
@@ -37,7 +39,7 @@ class AllowChange(BaseModel):
 
 
 class ModelingConfig(BaseModel):
-    model: ModelConfig = None
+    model: Union[List[ModelConfig], ModelConfig] = None
     alerts: dict = None
     algorithm: dict | None = {}
     allow_change: AllowChange | None = {}
