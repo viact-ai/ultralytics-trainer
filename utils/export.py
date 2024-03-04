@@ -291,7 +291,7 @@ def get_zipfile(module: str,
                 model_config = get_model_config(model_info,
                                                 weight_path=model_path,
                                                 label_path=label_path)
-                model_config.id = str(id)
+                model_config.id = str(i)
                 models.append(model_config)
 
                 if model_id == main_model_id:
