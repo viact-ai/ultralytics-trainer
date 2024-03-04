@@ -25,6 +25,7 @@ class InferenceConfig(BaseModel):
 
 
 class ModelConfig(BaseModel):
+    id: str = None
     arch: Union[str, Enum] = None
     type: ModelingType = None
     inference: InferenceConfig = None
@@ -34,7 +35,7 @@ class ModelConfig(BaseModel):
 
 
 class AllowChange(BaseModel):
-    inference: Dict[int, list] = {0: ["conf_threshold", "iou_threshold"]}
+    inference: Dict[str, list] = {"0": ["conf_threshold", "iou_threshold"]}
     algorithm: list = []
 
 
