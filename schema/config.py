@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict
 
 from pydantic import BaseModel
 
@@ -34,7 +34,7 @@ class ModelConfig(BaseModel):
 
 
 class AllowChange(BaseModel):
-    inference: list = ["conf_threshold", "iou_threshold"]
+    inference: Dict[int, list] = {0: ["conf_threshold", "iou_threshold"]}
     algorithm: list = []
 
 

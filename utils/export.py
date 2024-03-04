@@ -302,9 +302,11 @@ def get_zipfile(module: str,
                                arcname=label_path)
                     zipf.write(onnx_model_filepath,
                                arcname=model_path)
-
+        allow_change_inference = {}
+        for i in range(len(models)):
+            allow_change_inference[i] = ["conf_threshold", "iou_threshold"]
         allow_change = AllowChange(
-            inference=["conf_threshold", "iou_threshold"],
+            inference=allow_change_inference,
             algorithm=get_algorithm_allow_change(ai_module=module)
         )
 
