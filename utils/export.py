@@ -291,6 +291,7 @@ def get_zipfile(module: str,
                 model_config = get_model_config(model_info,
                                                 weight_path=model_path,
                                                 label_path=label_path)
+                model_config.id = str(i)
                 models.append(model_config)
 
                 if model_id == main_model_id:
@@ -303,8 +304,9 @@ def get_zipfile(module: str,
                     zipf.write(onnx_model_filepath,
                                arcname=model_path)
         allow_change_inference = {}
-        for i in range(len(models)):
-            allow_change_inference[i] = ["conf_threshold", "iou_threshold"]
+        for model in models:
+            if model.id:
+                allow_change_inference[model.id] = ["conf_threshold", "iou_threshold"]
         allow_change = AllowChange(
             inference=allow_change_inference,
             algorithm=get_algorithm_allow_change(ai_module=module)
