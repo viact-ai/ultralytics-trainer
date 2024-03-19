@@ -1,5 +1,6 @@
 from clearml import Model, Dataset
 import os
+from typing import List, Dict
 
 
 def download_model(model_id: str) -> str:
@@ -65,8 +66,13 @@ def get_dataset_from_storage(dataset_id: str) -> str:
         print(f"Found zip file at path {zip_file}")
 
     # Assumpe there only 1 *.yaml file
-    yaml_filepath: Path = _get_yaml_files(folderpath)[0]
-    yaml_filepath: str = str(yaml_filepath.absolute())
+    dataset_path = folderpath
+    try:
+        yaml_filepath: Path = _get_yaml_files(folderpath)[0]
+        yaml_filepath: str = str(yaml_filepath.absolute())
+        if yaml_filepath:
+            dataset_path = yaml_filepath
+    except:
+        print("Error when finding yaml file")
 
-    return yaml_filepath
-
+    return dataset_path

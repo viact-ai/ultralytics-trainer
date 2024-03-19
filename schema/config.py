@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List, Dict
 
 from pydantic import BaseModel
 
@@ -25,19 +25,22 @@ class InferenceConfig(BaseModel):
 
 
 class ModelConfig(BaseModel):
+    id: str = None
     arch: Union[str, Enum] = None
     type: ModelingType = None
     inference: InferenceConfig = None
     size: Optional[str] = None
+    weight_path: str = None
+    label_path: str = None
 
 
 class AllowChange(BaseModel):
-    inference: list = ["conf_threshold", "iou_threshold"]
+    inference: Dict[str, list] = {"0": ["conf_threshold", "iou_threshold"]}
     algorithm: list = []
 
 
 class ModelingConfig(BaseModel):
-    model: ModelConfig = None
+    model: Union[List[ModelConfig], ModelConfig] = None
     alerts: dict = None
     algorithm: dict | None = {}
     allow_change: AllowChange | None = {}

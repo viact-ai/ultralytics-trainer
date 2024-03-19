@@ -3,6 +3,7 @@ import os
 from clearml import Dataset, Task
 from ultralytics import YOLO
 from utils.clearml_utils import download_model, get_dataset_from_storage
+from enums.config import YOLOTasks
 
 
 def get_model_name_from_choice(model_name: str, model_variant: str) -> str:
@@ -16,6 +17,21 @@ def get_model_name_from_choice(model_name: str, model_variant: str) -> str:
     }
 
     return mapping.get((model_name, model_variant), "")
+
+
+def get_model_path(model_version: str,
+                   model_type: str):
+    suffix = ""
+    model_path = f"{model_version}.pt"
+    if model_type == str(YOLOTasks.CLASSIFY):
+        suffix = "cls"
+    elif model_type == str(YOLOTasks.SEGMENT):
+        suffix = "seg"
+
+    if suffix != "":
+        model_path = f"{model_version}-{suffix}.pt"
+
+    return model_path
 
 
 # def get_dataset_from_storage(dataset_id: str) -> str:
@@ -81,22 +97,24 @@ def train_yolo(
         batch_size: int = 16,
         imgsz: int = 640,
         epochs: int = 10,
-        pretrained_model_id: str = None
+        pretrained_model_id: str = None,
+        model_type: str = "detect"
 ) -> None:
 
     # yaml_filepath = get_dataset_zip_from_storage(dataset_id=dataset_id)
-    yaml_filepath = get_dataset_from_storage(dataset_id=dataset_id)
+    dataset_filepath = get_dataset_from_storage(dataset_id=dataset_id)
 
-    print(f"Dataset is stored at {yaml_filepath}")
+    print(f"Dataset is stored at {dataset_filepath}")
     print("Complete prepared dataset, continue to training the model...")
-    model_path = f"{model_version}.pt"
+    model_path = get_model_path(model_version=model_version,
+                                model_type=model_type)
     if pretrained_model_id is not None:
         pretrained_model_path = download_model(model_id=pretrained_model_id)
         model_path = pretrained_model_path
     print("Model_path", model_path)
     model = YOLO(model_path)
     model.train(
-        data=yaml_filepath,
+        data=dataset_filepath,
         imgsz=imgsz,
         epochs=epochs,
         cache='ram',
@@ -125,21 +143,18 @@ if __name__ == "__main__":
     args.add_argument(
         "--epochs", default=10, help="Epochs", type=int,
     )
-
-    # args.add_argument(
-    #     "--project", default="YOLOv5", help="ClearML Project Name",
-    # )
-    # args.add_argument(
-    #     "--name", default="Train YOLOv5", help="ClearML Task name",
-    # )
+    args.add_argument(
+        "--model_type", default="detect", help="Task of model", type=str
+    )
 
     args = args.parse_args()
 
     task = Task.current_task()
     if task is None:
+        task_name = f"Train {args.model_version} {args.model_type} "
         task = Task.init(
             project_name=args.model_version,
-            task_name="Train " + args.model_version,
+            task_name=task_name,
         )
 
     train_yolo(
@@ -148,4 +163,5 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         imgsz=args.imgsz,
         epochs=args.epochs,
-        pretrained_model_id=args.pretrained_model_id)
+        pretrained_model_id=args.pretrained_model_id,
+        model_type=args.model_type)
