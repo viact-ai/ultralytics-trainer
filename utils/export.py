@@ -152,7 +152,7 @@ def check_class(ai_module: ModuleType,
         for _, value in neccessary_classes.items():
             count = 0
             for cls in value:
-                if cls in classes:
+                if str(cls) in classes:
                     count += 1
             if count == len(value):
                 flag = True
