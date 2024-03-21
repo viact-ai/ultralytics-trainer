@@ -142,9 +142,9 @@ def check_class(ai_module: ModuleType,
     count = 0
     neccessary_classes = MODULE_CLASSES[ai_module]
     if isinstance(neccessary_classes, list) \
-            and len(neccessary_classes) == 1:
+            and len(neccessary_classes):
         for cls in neccessary_classes:
-            if cls in classes:
+            if str(cls) in classes:
                 count += 1
         return count == len(neccessary_classes)
     elif isinstance(neccessary_classes, dict):
