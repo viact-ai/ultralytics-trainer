@@ -14,11 +14,20 @@ from schema.modules.danger_zone import (
 from schema.modules.open_edge import OPEN_EDGE_ALLOW_CHANGES, OpenEdgeParam, Classes
 from schema.modules.person_near_fence import PERSON_NEAR_FENCE_ALLOW_CHANGES, PersonNearFenceParam
 from schema.modules.safe_lifting import SAFE_LIFTING_ALLOW_CHANGES, SafeLiftingParam
+from schema.modules.not_covering_shoes import (NOT_COVERING_SHOES_ALLOW_CHANGES,
+                                               NotCoveringShoesParam,
+                                               NotConveringShoesClasses)
+
+from schema.modules.outside_walking import OUTSIDE_WALKING_ALLOW_CHANGES, OutsideWalkingParam
+from schema.modules.ppe_detection import PPE_ALLOW_CHANGES, PPEDetectionParam, PPEAlertClasses
+from schema.modules.unauthorized_access import UNAUTHORIZED_ACCESS_ALLOW_CHANGES, UnauthorizedAccessParam
 from schema.modules.tracking import (
     MOTION_DETECTION_ALLOW_CHANGES,
     TRAFFIC_JAM_ALLOW_CHANGES,
+    ILLEGAL_PARKING_ALLOW_CHANGES,
     MotionDetectionParam,
-    TrafficJamParam)
+    TrafficJamParam,
+    IllegalParkingParam)
 from schema.config import (
     ModelingConfig,
     ModelConfig,
@@ -131,6 +140,16 @@ def get_algorithm_allow_change(ai_module: ModuleType):
         return MOTION_DETECTION_ALLOW_CHANGES
     elif ai_module == ModuleType.TRAFFIC_JAM:
         return TRAFFIC_JAM_ALLOW_CHANGES
+    elif ai_module == ModuleType.ILLEGAL_PARKING:
+        return ILLEGAL_PARKING_ALLOW_CHANGES
+    elif ai_module == ModuleType.NOT_COVERING_SHOES:
+        return NOT_COVERING_SHOES_ALLOW_CHANGES
+    elif ai_module == ModuleType.OUTSIDE_WALKING:
+        return OUTSIDE_WALKING_ALLOW_CHANGES
+    elif ai_module == ModuleType.PPE_DETECTION:
+        return PPE_ALLOW_CHANGES
+    elif ai_module == ModuleType.UNAUTHORIZED_ACCESS:
+        return UNAUTHORIZED_ACCESS_ALLOW_CHANGES
     else:
         return []
 
@@ -144,20 +163,34 @@ def check_class(ai_module: ModuleType,
     if isinstance(neccessary_classes, list) \
             and len(neccessary_classes):
         for cls in neccessary_classes:
-            if str(cls) in classes:
+
+            # Check alias name
+            if isinstance(cls, list):
+                flag = False
+                for alias in cls:
+                    if str(alias) in classes:
+                        flag = True
+                        break
+                if flag:
+                    count += 1
+            # Check basic class
+            elif str(cls) in classes:
                 count += 1
         return count == len(neccessary_classes)
     elif isinstance(neccessary_classes, dict):
-        flag = False
+        total = 0
         for _, value in neccessary_classes.items():
             count = 0
+            if value is None:
+                total += 1
+                continue
+
             for cls in value:
                 if str(cls) in classes:
                     count += 1
             if count == len(value):
-                flag = True
-                continue
-        return flag
+                total += 1
+        return total == 1
 
     return False
 
@@ -213,6 +246,56 @@ def get_module_configs(ai_module: ModuleType,
         algo_config = TrafficJamParam(classes=[i for i in range(len(classes))])
         alert_str = DEFAULT_ALERT_STRING[ai_module]
 
+    elif ai_module == ModuleType.ILLEGAL_PARKING:
+        filter_classes = []
+        for i, cls in enumerate(classes):
+            if cls in MODULE_CLASSES[ai_module]:
+                filter_classes.append(i)
+        algo_config = IllegalParkingParam(classes=filter_classes)
+
+    elif ai_module == ModuleType.OUTSIDE_WALKING:
+        algo_config = OutsideWalkingParam(
+            filter_classes=[classes.index(str(BaseClasses.PERSON))])
+
+    elif ai_module == ModuleType.NOT_COVERING_SHOES:
+        param_class = NotConveringShoesClasses(
+            person=classes.index(str(BaseClasses.PERSON)),
+            no_boots=classes.index(str(BaseClasses.NO_BOOTS))
+        )
+        algo_config = NotCoveringShoesParam(classes=param_class)
+
+    elif ai_module == ModuleType.PPE_DETECTION:
+        no_safety_helmet_index = None
+        no_safety_vest_index = None
+        for cls in BaseClasses.NO_SAFETY_VEST:
+            try:
+                no_safety_vest_index = classes.index(str(cls))
+            except:
+                continue
+        for cls in BaseClasses.NO_SAFETY_HELMET:
+            try:
+                no_safety_vest_index = classes.index(str(cls))
+            except:
+                continue
+
+        ppe_class = PPEAlertClasses(
+            no_safety_helmet=no_safety_helmet_index,
+            no_safety_vest=no_safety_vest_index
+        )
+
+        algo_config = PPEDetectionParam(
+            filter_classes=[no_safety_helmet_index, no_safety_vest_index],
+            alert_classes=[no_safety_helmet_index, no_safety_vest_index],
+            classnames=ppe_class)
+
+    elif ai_module == ModuleType.UNAUTHORIZED_ACCESS:
+        filter_classes = [classes.index(str(BaseClasses.PERSON)),
+                          classes.index(str(BaseClasses.NO_VEST))]
+        algo_config = UnauthorizedAccessParam(
+            filter_classes=filter_classes,
+            accepted_classes=[2]
+        )
+
     alert_config["alert_string"] = alert_str
     if not isinstance(algo_config, dict):
         algo_config = algo_config.model_dump()
@@ -261,6 +344,7 @@ def get_zipfile(module: str,
     zip_filepath = Path(f"{module}_{version}.zip")
     models = []
     main_classes = []
+    sub_model_classes = []
     artifact_config_path = "./default_config.json"
     main_model_id = get_main_model(ai_module=module,
                                    model_infos=model_infos)
@@ -296,6 +380,8 @@ def get_zipfile(module: str,
 
                 if model_id == main_model_id:
                     main_classes = classes
+                else:
+                    sub_model_classes = classes
 
                 onnx_model_filepath = model_info["onnx_path"]
                 with zipfile.ZipFile(zip_filepath, "a") as zipf:
@@ -306,7 +392,8 @@ def get_zipfile(module: str,
         allow_change_inference = {}
         for model in models:
             if model.id:
-                allow_change_inference[model.id] = ["conf_threshold", "iou_threshold"]
+                allow_change_inference[model.id] = [
+                    "conf_threshold", "iou_threshold"]
         allow_change = AllowChange(
             inference=allow_change_inference,
             algorithm=get_algorithm_allow_change(ai_module=module)
@@ -314,6 +401,10 @@ def get_zipfile(module: str,
 
         algo_config, alert_config = get_module_configs(
             ai_module=module, classes=main_classes)
+
+        # TODO: Remove later
+        if module == ModuleType.UNAUTHORIZED_ACCESS:
+            algo_config.vest_classes = sub_model_classes
         package_config = ModelingConfig(
             model=models,
             alerts=alert_config,

@@ -36,6 +36,27 @@ class BaseClasses(BaseType):
     HOOK = "hook"
     PERSON = "person"
 
+    BOOTS = "boots"
+    GLOVES = "gloves"
+    HARDHAT = "hardhat"
+    NO_BOOTS = "no_boots"
+    NO_GLOVES = "no_gloves"
+    NO_HARD_HAT = "no_hardhat"
+    NO_VEST = "no_vest"
+    VEST = "vest"
+
+    # predefined
+    NO_SAFETY_VEST = [NO_VEST]
+    NO_SAFETY_HELMET = [NO_HARD_HAT]
+    VEHICLES = [
+        "bicycle"
+        "car",
+        "motorcycle",
+        "bus",
+        "train",
+        "truck"
+    ]
+
 
 class ModuleType(BaseType):
     DANGER_ZONE = "danger-zone"
@@ -47,6 +68,13 @@ class ModuleType(BaseType):
     VEHICLE_COUNTING = "vehicle-counting"
     TRAFFIC_JAM = "traffic-jam"
     MOTION_DETECTION = "motion-detection"
+
+    # V1.0.4
+    PPE_DETECTION = "ppe-detection"
+    ILLEGAL_PARKING = "illegal-parking"
+    UNAUTHORIZED_ACCESS = "unauthorised-worker-intrusion"
+    NOT_COVERING_SHOES = "no-covering-shoes"
+    OUTSIDE_WALKING = "outside-walking"
 
 
 class ModelingType(BaseType):
@@ -77,6 +105,12 @@ MAPPING_MODULE_TO_MODELING: Dict[str, str] = {
     ModuleType.VEHICLE_COUNTING: ModelingType.OBJECT_DETECTION,
     ModuleType.TRAFFIC_JAM: ModelingType.OBJECT_DETECTION,
     ModuleType.MOTION_DETECTION: ModelingType.OBJECT_DETECTION,
+    ####
+    ModuleType.ILLEGAL_PARKING: ModelingType.OBJECT_DETECTION,
+    ModuleType.NOT_COVERING_SHOES: ModelingType.OBJECT_DETECTION,
+    ModuleType.OUTSIDE_WALKING: ModelingType.OBJECT_DETECTION,
+    ModuleType.PPE_DETECTION: ModelingType.OBJECT_DETECTION,
+    ModuleType.UNAUTHORIZED_ACCESS: ModelingType.OBJECT_DETECTION
 }
 
 
@@ -120,4 +154,14 @@ MODULE_CLASSES = {
         BaseClasses.HOLE,
         BaseClasses.CANVAS,
     ],
+    ModuleType.ILLEGAL_PARKING: BaseClasses.VEHICLES,
+    ModuleType.OUTSIDE_WALKING: [BaseClasses.PERSON],
+    ModuleType.NOT_COVERING_SHOES: [BaseClasses.PERSON,
+                                    BaseClasses.NO_BOOTS],
+    ModuleType.PPE_DETECTION: [BaseClasses.NO_SAFETY_VEST,
+                               BaseClasses.NO_SAFETY_HELMET],
+    ModuleType.UNAUTHORIZED_ACCESS: {
+        "detect": [BaseClasses.PERSON, BaseClasses.NO_VEST],
+        "classify": None
+    }
 }
