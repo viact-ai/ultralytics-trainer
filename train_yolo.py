@@ -8,19 +8,22 @@ from enums.config import YOLOTasks
 
 def get_model_name_from_choice(model_name: str, model_variant: str) -> str:
     mapping = {
+        ("YOLOv5", "nano"): "yolov5n",
         ("YOLOv5", "small"): "yolov5s",
         ("YOLOv5", "medium"): "yolov5m",
         ("YOLOv5", "large"): "yolov5l",
+        ("YOLOv5", "extra_large"): "yolov5x",
+        ("YOLOv8", "nano"): "yolov8n",
         ("YOLOv8", "small"): "yolov8s",
         ("YOLOv8", "medium"): "yolov8m",
         ("YOLOv8", "large"): "yolov8l",
+        ("YOLOv8", "extra_large"): "yolov8x",
     }
 
     return mapping.get((model_name, model_variant), "")
 
 
-def get_model_path(model_version: str,
-                   model_type: str):
+def get_model_path(model_version: str, model_type: str):
     suffix = ""
     model_path = f"{model_version}.pt"
     if model_type == str(YOLOTasks.CLASSIFY):
@@ -92,13 +95,13 @@ def get_model_path(model_version: str,
 
 
 def train_yolo(
-        dataset_id: str,
-        model_version: str = "yolov5s",
-        batch_size: int = 16,
-        imgsz: int = 640,
-        epochs: int = 10,
-        pretrained_model_id: str = None,
-        model_type: str = "detect"
+    dataset_id: str,
+    model_version: str = "yolov5s",
+    batch_size: int = 16,
+    imgsz: int = 640,
+    epochs: int = 10,
+    pretrained_model_id: str = None,
+    model_type: str = "detect",
 ) -> None:
 
     # yaml_filepath = get_dataset_zip_from_storage(dataset_id=dataset_id)
@@ -106,46 +109,40 @@ def train_yolo(
 
     print(f"Dataset is stored at {dataset_filepath}")
     print("Complete prepared dataset, continue to training the model...")
-    model_path = get_model_path(model_version=model_version,
-                                model_type=model_type)
+    model_path = get_model_path(model_version=model_version, model_type=model_type)
     if pretrained_model_id is not None:
         pretrained_model_path = download_model(model_id=pretrained_model_id)
         model_path = pretrained_model_path
     print("Model_path", model_path)
     model = YOLO(model_path)
     model.train(
-        data=dataset_filepath,
-        imgsz=imgsz,
-        epochs=epochs,
-        cache='ram',
-        batch=batch_size
+        data=dataset_filepath, imgsz=imgsz, epochs=epochs, cache="ram", batch=batch_size
     )
 
 
 if __name__ == "__main__":
     import argparse
+
     args = argparse.ArgumentParser()
-    args.add_argument(
-        "--dataset_id", default="yolov5s", help="ClearML dataset id"
-    )
+    args.add_argument("--dataset_id", default="yolov5s", help="ClearML dataset id")
     args.add_argument(
         "--pretrained_model_id", default=None, help="ClearML pretained mopdel id"
     )
+    args.add_argument("--model_version", default="yolov5s", help="Model version")
+    args.add_argument("--batch_size", default=16, type=int, help="Batch size")
     args.add_argument(
-        "--model_version", default="yolov5s", help="Model version"
+        "--imgsz",
+        default=640,
+        help="Image size",
+        type=int,
     )
     args.add_argument(
-        "--batch_size", default=16, type=int, help="Batch size"
+        "--epochs",
+        default=10,
+        help="Epochs",
+        type=int,
     )
-    args.add_argument(
-        "--imgsz", default=640, help="Image size", type=int,
-    )
-    args.add_argument(
-        "--epochs", default=10, help="Epochs", type=int,
-    )
-    args.add_argument(
-        "--model_type", default="detect", help="Task of model", type=str
-    )
+    args.add_argument("--model_type", default="detect", help="Task of model", type=str)
 
     args = args.parse_args()
 
@@ -164,4 +161,5 @@ if __name__ == "__main__":
         imgsz=args.imgsz,
         epochs=args.epochs,
         pretrained_model_id=args.pretrained_model_id,
-        model_type=args.model_type)
+        model_type=args.model_type,
+    )
