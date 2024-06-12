@@ -1,0 +1,27 @@
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Ho_Chi_Minh
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    tzdata \
+    wget \
+    xz-utils \
+    pkg-config \
+    curl \
+    git \
+    python3-numpy \
+    python3-pip \
+    python3-dev \
+    ffmpeg \
+    unzip \
+    libprotobuf-dev \
+    protobuf-compiler \
+    libprotoc-dev \
+    libopencv-dev 
+
+RUN python3 -m pip install -U pip
+RUN python3 -m pip install clearml-agent -U
+RUN python3 -m pip install ultralytics
+RUN python3 -m pip install clearml
