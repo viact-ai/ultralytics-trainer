@@ -37,71 +37,15 @@ def get_model_path(model_version: str, model_type: str):
     return model_path
 
 
-# def get_dataset_from_storage(dataset_id: str) -> str:
-#     """
-#             ```
-#         yolov5/
-#             temp/
-#                 {dataset_name}.zip
-#             datasets/ <- NOTE: this is requried in ultraalytics config
-#                 {dataset_name}/
-#                     train/
-#                     test/
-#                     val/
-#                     *.yaml -> return filepath of *.yaml
-#         ```
-#     """
-#     from pathlib import Path
-
-#     def _get_yaml_files(folder_path: str) -> list[Path]:
-#         folder_path = Path(folder_path)
-#         yaml_files = folder_path.glob("*.yaml")
-#         return list(yaml_files)
-
-#     def _check_zip_file(folder_path: str):
-#         folder_path = Path(folder_path)
-#         zip_files = list(folder_path.glob("*.zip"))
-#         zip_file = None
-#         if len(zip_files):
-#             zip_file = zip_files[0]
-#             os.system(f"unzip \"{zip_file}\" -d \"{folder_path}\"")
-
-#         return zip_file
-
-#     dataset = Dataset.get(dataset_id=dataset_id)
-
-#     dataset_dir = os.path.join(os.getcwd(), "datasets")
-#     folderpath = os.path.join(dataset_dir, dataset.name)
-#     from ultralytics import settings
-#     settings.update({'datasets_dir': dataset_dir})
-
-#     os.makedirs(dataset_dir, exist_ok=True)
-#     os.makedirs(folderpath, exist_ok=True)
-
-#     dataset.get_mutable_local_copy(
-#         target_folder=folderpath,
-#         overwrite=True
-#     )
-
-#     zip_file = _check_zip_file(folderpath)
-#     if zip_file:
-#         print(f"Found zip file at path {zip_file}")
-
-#     # Assumpe there only 1 *.yaml file
-#     yaml_filepath: Path = _get_yaml_files(folderpath)[0]
-#     yaml_filepath: str = str(yaml_filepath.absolute())
-
-#     return yaml_filepath
-
-
 def train_yolo(
     dataset_id: str,
-    model_version: str = "yolov5s",
+    model_version: str = "yolov8s",
     batch_size: int = 16,
     imgsz: int = 640,
-    epochs: int = 10,
+    epochs: int = 50,
     pretrained_model_id: str = None,
     model_type: str = "detect",
+    **kwargs,
 ) -> None:
 
     # yaml_filepath = get_dataset_zip_from_storage(dataset_id=dataset_id)
@@ -116,7 +60,12 @@ def train_yolo(
     print("Model_path", model_path)
     model = YOLO(model_path)
     model.train(
-        data=dataset_filepath, imgsz=imgsz, epochs=epochs, cache="ram", batch=batch_size
+        data=dataset_filepath,
+        imgsz=imgsz,
+        epochs=epochs,
+        cache="ram",
+        batch=batch_size,
+        **kwargs,
     )
 
 
@@ -143,6 +92,120 @@ if __name__ == "__main__":
         type=int,
     )
     args.add_argument("--model_type", default="detect", help="Task of model", type=str)
+    args.add_argument(
+        "--optimizer",
+        default="auto",
+        help=(
+            "Choice of optimizer for training. Options include SGD, Adam,"
+            " AdamW, NAdam, RAdam, RMSProp etc., or auto for automatic selection"
+            " based on model configuration. Affects convergence speed and stability."
+        ),
+    )
+    args.add_argument(
+        "--amp",
+        default=False,
+        help=(
+            "Enables Automatic Mixed Precision (AMP) training,"
+            " reducing memory usage and possibly speeding up"
+            " training with minimal impact on accuracy."
+        ),
+    )
+    args.add_argument(
+        "--single-cls",
+        default=False,
+        help=(
+            "Treats all classes in multi-class datasets as a"
+            " single class during training. Useful for binary"
+            " classification tasks or when focusing on object"
+            " presence rather than classification."
+        ),
+        type=bool,
+    )
+    args.add_argument(
+        "--cos-lr",
+        default=False,
+        help=(
+            "Utilizes a cosine learning rate scheduler,"
+            " adjusting the learning rate following a cosine"
+            " curve over epochs. Helps in managing learning rate"
+            " for better convergence."
+        ),
+    )
+    args.add_argument(
+        "--lr0",
+        default=0.01,
+        help=(
+            "Initial learning rate (i.e. SGD=1E-2, Adam=1E-3)."
+            " Adjusting this value is crucial for the optimization"
+            " process, influencing how rapidly model weights are updated."
+        ),
+        type=float,
+    )
+    args.add_argument(
+        "--lrf",
+        default=0.01,
+        help=(
+            "Initial learning rate (i.e. SGD=1E-2, Adam=1E-3)."
+            " Adjusting this value is crucial for the optimization"
+            " process, influencing how rapidly model weights are updated."
+        ),
+        type=float,
+    )
+    args.add_argument(
+        "--momentum",
+        default=0.937,
+        help=(
+            "Momentum factor for SGD or beta1 for Adam optimizers,"
+            " influencing the incorporation of past gradients in the current update."
+        ),
+    )
+    args.add_argument(
+        "--weight_decay",
+        default=0.0005,
+        help="L2 regularization term, penalizing large weights to prevent overfitting.",
+    )
+    args.add_argument(
+        "--warmup_epochs",
+        default=3,
+        help=(
+            "Number of epochs for learning rate warmup, gradually"
+            " increasing the learning rate from a low value to the"
+            " initial learning rate to stabilize training early on."
+        ),
+    )
+    args.add_argument(
+        "--warmup_momentum",
+        default=0.8,
+        help=(
+            "Initial momentum for warmup phase, gradually adjusting"
+            " to the set momentum over the warmup period."
+        ),
+    )
+    args.add_argument(
+        "--box",
+        default=7.5,
+        help=(
+            "Weight of the box loss component in the loss function,"
+            " influencing how much emphasis is placed on accurately"
+            " predicting bounding box coordinates."
+        ),
+    )
+    args.add_argument(
+        "--cls",
+        default=0.5,
+        help=(
+            "Weight of the classification loss in the total loss function,"
+            " affecting the importance of correct class prediction relative to other components."
+        ),
+    )
+    args.add_argument(
+        "--dropout",
+        default=0.0,
+        help=(
+            "Dropout rate for regularization in classification tasks,"
+            " preventing overfitting by randomly omitting units during training."
+        ),
+    )
 
     args = args.parse_args()
 
@@ -162,4 +225,14 @@ if __name__ == "__main__":
         epochs=args.epochs,
         pretrained_model_id=args.pretrained_model_id,
         model_type=args.model_type,
+        single_cls=args.single_cls,
+        lr0=args.lr0,
+        lrf=args.lrf,
+        momentum=args.momentum,
+        weight_decay=args.weight_decay,
+        warmup_epochs=args.warmup_epochs,
+        warmup_momentum=args.warmup_momentum,
+        box=args.box,
+        cls=args.cls,
+        dropout=args.dropout,
     )
