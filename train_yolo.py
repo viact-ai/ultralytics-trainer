@@ -144,7 +144,7 @@ if __name__ == "__main__":
     )
     args.add_argument(
         "--lrf",
-        default=0.01,
+        default=0.1,
         help=(
             "Initial learning rate (i.e. SGD=1E-2, Adam=1E-3)."
             " Adjusting this value is crucial for the optimization"
@@ -173,6 +173,7 @@ if __name__ == "__main__":
             " increasing the learning rate from a low value to the"
             " initial learning rate to stabilize training early on."
         ),
+        type=int,
     )
     args.add_argument(
         "--warmup_momentum",
