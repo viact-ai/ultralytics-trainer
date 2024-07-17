@@ -2,8 +2,9 @@ import os
 
 from clearml import Dataset, Task
 from ultralytics import YOLO
-from utils.clearml_utils import download_model, get_dataset_from_storage
+
 from enums.config import YOLOTasks
+from utils.clearml_utils import download_model, get_dataset_from_storage
 
 
 def get_model_name_from_choice(model_name: str, model_variant: str) -> str:
@@ -226,6 +227,7 @@ if __name__ == "__main__":
         pretrained_model_id=args.pretrained_model_id,
         model_type=args.model_type,
         single_cls=args.single_cls,
+        cos_lr=args.cos_lr,
         lr0=args.lr0,
         lrf=args.lrf,
         momentum=args.momentum,
