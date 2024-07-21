@@ -1,0 +1,23 @@
+from pydantic import BaseModel
+
+
+class IllegalParkingParam(BaseModel):
+    classes: list | dict | None = [0,]
+    LOWER_MOTION_THRESHOLD: int = 1
+    UPPER_LOWER_THRESHOLD: int = 100
+    MAX_NUMBER_OF_CHECKING_POINTS: int = 30
+    USE_ADAPTIVE_MOTION_THRESHOLD: bool = True
+    USE_FOUR_CORNER_CHECK: bool = True
+    LINGER_TIME_THRESHOLD: int = 30
+    PERCENT_THRESHOLD: float = 0.25
+
+
+ILLEGAL_PARKING_ALLOW_CHANGES = [
+    "LOWER_MOTION_THRESHOLD",
+    "UPPER_LOWER_THRESHOLD",
+    "MAX_NUMBER_OF_CHECKING_POINTS",
+    "USE_ADAPTIVE_MOTION_THRESHOLD",
+    "USE_FOUR_CORNER_CHECK",
+    "LINGER_TIME_THRESHOLD",
+    "PERCENT_THRESHOLD",
+]

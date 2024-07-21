@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Union, Any
+from typing import Any, Dict, Union
 
 
 def get_value(defined_type: Enum,
@@ -47,6 +47,14 @@ class ModuleType(BaseType):
     VEHICLE_COUNTING = "vehicle-counting"
     TRAFFIC_JAM = "traffic-jam"
     MOTION_DETECTION = "motion-detection"
+    ANTI_COLLISION = "anti-collision"
+    PPE_DETECTION = "ppe-detection"
+    SAFETY_HELMET = "safety-helmet"
+    SAFETY_VEST = "safety-vest"
+    OUTSIDE_WALKING = "outside-walking"
+    NO_COVERING_SHOES = "no-covering-shoes"
+    UNAUTHORIZED_ACCESS = "unauthorized-access"
+    ILLEGAL_PARKING = "illegal-parking"
 
 
 class ModelingType(BaseType):
@@ -77,6 +85,14 @@ MAPPING_MODULE_TO_MODELING: Dict[str, str] = {
     ModuleType.VEHICLE_COUNTING: ModelingType.OBJECT_DETECTION,
     ModuleType.TRAFFIC_JAM: ModelingType.OBJECT_DETECTION,
     ModuleType.MOTION_DETECTION: ModelingType.OBJECT_DETECTION,
+    ModuleType.ANTI_COLLISION: ModelingType.OBJECT_DETECTION,
+    ModuleType.PPE_DETECTION: ModelingType.OBJECT_DETECTION,
+    ModuleType.SAFETY_HELMET: ModelingType.OBJECT_DETECTION,
+    ModuleType.SAFETY_VEST: ModelingType.OBJECT_DETECTION,
+    ModuleType.OUTSIDE_WALKING: ModelingType.OBJECT_DETECTION,
+    ModuleType.NO_COVERING_SHOES: ModelingType.OBJECT_DETECTION,
+    ModuleType.UNAUTHORIZED_ACCESS: ModelingType.OBJECT_DETECTION,
+    ModuleType.ILLEGAL_PARKING: ModelingType.OBJECT_DETECTION,
 }
 
 
@@ -90,7 +106,15 @@ DEFAULT_ALERT_STRING: Dict[str, Union[str, dict]] = {
     },
     ModuleType.OPEN_EDGE: "ALERT: No covered fence",
     ModuleType.PERSON_NEAR_FENCE:  "ALERT: Person near fence",
-    ModuleType.TRAFFIC_JAM: "ALERT: Traffic jam is deteced in zone"
+    ModuleType.TRAFFIC_JAM: "ALERT: Traffic jam is deteced in zone",
+    ModuleType.ANTI_COLLISION: "ALERT: Collision is deteced in zone",
+    ModuleType.PPE_DETECTION: "ALERT: No PPE detected",
+    ModuleType.SAFETY_HELMET: "ALERT: No helmet detected",
+    ModuleType.SAFETY_VEST: "ALERT: No vest detected",
+    ModuleType.OUTSIDE_WALKING: "ALERT: Walking outside the zone",
+    ModuleType.NO_COVERING_SHOES: "ALERT: No covering shoes detected",
+    ModuleType.UNAUTHORIZED_ACCESS: "ALERT: Unauthorized person access detected",
+    ModuleType.ILLEGAL_PARKING: "ALERT: Illegal parking detected",
 }
 
 

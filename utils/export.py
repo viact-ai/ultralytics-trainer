@@ -1,56 +1,94 @@
-from ultralytics import YOLO
-from pathlib import Path
 import json
 import tempfile
 import zipfile
-from utils.clearml_utils import download_model
+from pathlib import Path
+from typing import Any, Dict, List
 
-from typing import Dict, List, Any
-from schema.export import ModelInfo, MODEL_TYPE
-from schema.modules.danger_zone import (
+from ultralytics import YOLO
+
+from enums.config import (
+    DEFAULT_ALERT_STRING,
+    MAPPING_MODULE_TO_MODELING,
+    MAPPING_YOLO_TASK_TO_MODELING,
+    MODULE_CLASSES,
+    BaseClasses,
+    ModuleType,
+    YOLOTasks,
+    get_value,
+)
+from schema.config import (
+    AlertConfig,
+    AllowChange,
+    InferenceConfig,
+    ModelConfig,
+    ModelingConfig,
+)
+from schema.export import MODEL_TYPE, ModelInfo
+from schema.modules.anti_collision import (
+    ANTI_COLLISION_ALLOW_CHANGES,
+    AntiCollisionParam,
+)
+from schema.modules.danger_zone import DangerZoneParam
+from schema.modules.illegal_parking import (
+    ILLEGAL_PARKING_ALLOW_CHANGES,
+    IllegalParkingParam,
+)
+from schema.modules.lifting_load import (
     LIFTING_LOAD_DANGER_ZONE_ALLOW_CHANGES,
-    DangerZoneParam,
-    LiftingLoadDangerZoneParam)
-from schema.modules.open_edge import OPEN_EDGE_ALLOW_CHANGES, OpenEdgeParam, Classes
-from schema.modules.person_near_fence import PERSON_NEAR_FENCE_ALLOW_CHANGES, PersonNearFenceParam
+    LiftingLoadDangerZoneParam,
+)
+from schema.modules.no_covering_shoes import (
+    NO_COVERING_SHOES_ALLOW_CHANGES,
+    NoCoveringShoesParam,
+)
+from schema.modules.open_edge import OPEN_EDGE_ALLOW_CHANGES, Classes, OpenEdgeParam
+from schema.modules.outside_walking import (
+    OUTSIDE_WALKING_ALLOW_CHANGES,
+    OutsideWalkingParam,
+)
+from schema.modules.person_near_fence import (
+    PERSON_NEAR_FENCE_ALERT_ALLOW_CHANGES,
+    PERSON_NEAR_FENCE_ALLOW_CHANGES,
+    PersonNearFenceParam,
+)
+from schema.modules.ppe_detection import PPE_DETECTION_ALLOW_CHANGES, PPEDetectionParam
 from schema.modules.safe_lifting import SAFE_LIFTING_ALLOW_CHANGES, SafeLiftingParam
+from schema.modules.safety_helmet import (
+    SAFETY_HELMET_ALERT_ALLOW_CHANGES,
+    SAFETY_HELMET_ALLOW_CHANGES,
+    SafetyHelmetParam,
+)
+from schema.modules.safety_vest import (
+    SAFETY_VEST_ALERT_ALLOW_CHANGES,
+    SAFETY_VEST_ALLOW_CHANGES,
+    SafetyVestParam,
+)
 from schema.modules.tracking import (
     MOTION_DETECTION_ALLOW_CHANGES,
     TRAFFIC_JAM_ALLOW_CHANGES,
     MotionDetectionParam,
-    TrafficJamParam)
-from schema.config import (
-    ModelingConfig,
-    ModelConfig,
-    InferenceConfig,
-    AlertConfig,
-    AllowChange)
-from enums.config import (
-    get_value,
-    BaseClasses,
-    ModuleType,
-    YOLOTasks,
-    MAPPING_MODULE_TO_MODELING,
-    MAPPING_YOLO_TASK_TO_MODELING,
-    MODULE_CLASSES,
-    DEFAULT_ALERT_STRING)
-
+    TrafficJamParam,
+)
+from schema.modules.unauthorized_access import (
+    UNAUTHORIZED_ACCESS_ALLOW_CHANGES,
+    UnauthorizedAccessParam,
+)
+from utils.clearml_utils import download_model
 
 DEFAULT_OPSET = 12
 DEFAULT_DYNAMIC = True
 
 
-def label_list_to_txt(label_list: List[str],
-                      labels_txt_path: Path,
-                      model_class_names: dict = None) -> bool:
+def label_list_to_txt(
+    label_list: List[str], labels_txt_path: Path, model_class_names: dict = None
+) -> bool:
     flag = False
     names = list(model_class_names.values())
     if len(label_list) == 0:
         flag = True
     else:
         intersection = set(names).intersection(label_list)
-        flag = len(intersection) == len(
-            label_list) and len(intersection) == len(names)
+        flag = len(intersection) == len(label_list) and len(intersection) == len(names)
 
     if flag:
         labels_txt = "\n".join(names)
@@ -59,9 +97,10 @@ def label_list_to_txt(label_list: List[str],
     return names
 
 
-def export_to_onnx(models: List[ModelInfo],
-                   format: str = 'onnx') -> Dict[str, Dict[str, str]]:
-    '''
+def export_to_onnx(
+    models: List[ModelInfo], format: str = "onnx"
+) -> Dict[str, Dict[str, str]]:
+    """
     Ultralytics ONNX args: imgsz, half, dynamic, simplify, opset
     Reference to the document for more details
     Example saved position:
@@ -70,7 +109,7 @@ def export_to_onnx(models: List[ModelInfo],
                 {model_weights}.onnx <- Ultralytics YOLO stored convert model here
                 train_yolo.py
                 ...
-    '''
+    """
     model_infos = {}
     for i, model in enumerate(models):
         model_id = model.model_id
@@ -80,10 +119,7 @@ def export_to_onnx(models: List[ModelInfo],
         if model.model_type == MODEL_TYPE.CLASSIFICATION:
             img_size = 224
         output_name = yolo_model.export(
-            format=format,
-            imgsz=img_size,
-            dynamic=DEFAULT_DYNAMIC,
-            opset=DEFAULT_OPSET
+            format=format, imgsz=img_size, dynamic=DEFAULT_DYNAMIC, opset=DEFAULT_OPSET
         )
         names = yolo_model.names
         print(f"ONNX model stored at: {output_name}")
@@ -98,6 +134,9 @@ def export_to_onnx(models: List[ModelInfo],
         elif "yolov8" in model_arch:
             model_arch = "yolov8"
             model_size = model_arch.split("yolov8")[-1]
+        elif "yolov10" in model_arch:
+            model_arch = "yolov10"
+            model_size = model_arch.split("yolov10")[-1]
 
         if isinstance(img_size, int):
             img_size = [img_size, img_size]
@@ -111,7 +150,7 @@ def export_to_onnx(models: List[ModelInfo],
             "model_size": model_size,
             "task": yolo_model.task,
             "type": model.model_type,
-            "imgsz": img_size
+            "imgsz": img_size,
         }
     return model_infos
 
@@ -121,28 +160,77 @@ def get_algorithm_allow_change(ai_module: ModuleType):
 
     if ai_module == ModuleType.LIFTING_LOAD_DANGER_ZONE:
         return LIFTING_LOAD_DANGER_ZONE_ALLOW_CHANGES
-    elif ai_module == ModuleType.OPEN_EDGE:
+    if ai_module == ModuleType.OPEN_EDGE:
         return OPEN_EDGE_ALLOW_CHANGES
-    elif ai_module == ModuleType.PERSON_NEAR_FENCE:
+    if ai_module == ModuleType.PERSON_NEAR_FENCE:
         return PERSON_NEAR_FENCE_ALLOW_CHANGES
-    elif ai_module == ModuleType.SAFE_LIFTING:
+    if ai_module == ModuleType.SAFE_LIFTING:
         return SAFE_LIFTING_ALLOW_CHANGES
-    elif ai_module == ModuleType.MOTION_DETECTION:
+    if ai_module == ModuleType.MOTION_DETECTION:
         return MOTION_DETECTION_ALLOW_CHANGES
-    elif ai_module == ModuleType.TRAFFIC_JAM:
+    if ai_module == ModuleType.TRAFFIC_JAM:
         return TRAFFIC_JAM_ALLOW_CHANGES
-    else:
-        return []
+    if ai_module == ModuleType.ANTI_COLLISION:
+        return ANTI_COLLISION_ALLOW_CHANGES
+    if ai_module == ModuleType.PPE_DETECTION:
+        return PPE_DETECTION_ALLOW_CHANGES
+    if ai_module == ModuleType.SAFETY_VEST:
+        return SAFETY_VEST_ALLOW_CHANGES
+    if ai_module == ModuleType.SAFETY_HELMET:
+        return SAFETY_HELMET_ALLOW_CHANGES
+    if ai_module == ModuleType.OUTSIDE_WALKING:
+        return OUTSIDE_WALKING_ALLOW_CHANGES
+    if ai_module == ModuleType.NO_COVERING_SHOES:
+        return NO_COVERING_SHOES_ALLOW_CHANGES
+    if ai_module == ModuleType.UNAUTHORIZED_ACCESS:
+        return UNAUTHORIZED_ACCESS_ALLOW_CHANGES
+    if ai_module == ModuleType.ILLEGAL_PARKING:
+        return ILLEGAL_PARKING_ALLOW_CHANGES
+
+    return []
 
 
-def check_class(ai_module: ModuleType,
-                classes: List = None):
+def get_algorithm_alert_allow_change(ai_module: ModuleType):
+    # if ai_module
+
+    if ai_module == ModuleType.LIFTING_LOAD_DANGER_ZONE:
+        return None
+    if ai_module == ModuleType.OPEN_EDGE:
+        return None 
+    if ai_module == ModuleType.PERSON_NEAR_FENCE:
+        return PERSON_NEAR_FENCE_ALERT_ALLOW_CHANGES
+    if ai_module == ModuleType.SAFE_LIFTING:
+        return None
+    if ai_module == ModuleType.MOTION_DETECTION:
+        return None
+    if ai_module == ModuleType.TRAFFIC_JAM:
+        return None 
+    if ai_module == ModuleType.ANTI_COLLISION:
+        return None
+    if ai_module == ModuleType.PPE_DETECTION:
+        return None
+    if ai_module == ModuleType.SAFETY_VEST:
+        return SAFETY_VEST_ALERT_ALLOW_CHANGES 
+    if ai_module == ModuleType.SAFETY_HELMET:
+        return SAFETY_HELMET_ALERT_ALLOW_CHANGES
+    if ai_module == ModuleType.OUTSIDE_WALKING:
+        return None
+    if ai_module == ModuleType.NO_COVERING_SHOES:
+        return None 
+    if ai_module == ModuleType.UNAUTHORIZED_ACCESS:
+        return None 
+    if ai_module == ModuleType.ILLEGAL_PARKING:
+        return None 
+    
+    return None
+
+
+def check_class(ai_module: ModuleType, classes: List = None):
     if len(classes) == 0:
         return True
     count = 0
     neccessary_classes = MODULE_CLASSES[ai_module]
-    if isinstance(neccessary_classes, list) \
-            and len(neccessary_classes):
+    if isinstance(neccessary_classes, list) and len(neccessary_classes):
         for cls in neccessary_classes:
             if str(cls) in classes:
                 count += 1
@@ -162,42 +250,42 @@ def check_class(ai_module: ModuleType,
     return False
 
 
-def get_module_configs(ai_module: ModuleType,
-                       classes: list):
+def get_module_configs(ai_module: ModuleType, classes: list):
     algo_config = {}
     alert_config = {}
     alert_str = "ALERT"
     if ai_module == ModuleType.DANGER_ZONE:
         algo_config = DangerZoneParam(
-            alert_classes=[classes.index(str(BaseClasses.PERSON))])
-        alert_str = DEFAULT_ALERT_STRING[ai_module]
-    elif ai_module == ModuleType.LIFTING_LOAD_DANGER_ZONE:
-        algo_config = LiftingLoadDangerZoneParam(
-            project_classes=[classes.index(str(BaseClasses.HOOK))],
             alert_classes=[classes.index(str(BaseClasses.PERSON))]
         )
         alert_str = DEFAULT_ALERT_STRING[ai_module]
-
+    elif ai_module == ModuleType.LIFTING_LOAD_DANGER_ZONE:
+        algo_config = LiftingLoadDangerZoneParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
     elif ai_module == ModuleType.OPEN_EDGE:
         algo_config = OpenEdgeParam(
-            classes=Classes(person=classes.index(str(BaseClasses.PERSON)),
-                            canvas=classes.index(str(BaseClasses.CANVAS)),
-                            fence=classes.index(str(BaseClasses.FENCE)),
-                            hole=classes.index(str(BaseClasses.HOLE)))
+            classes=Classes(
+                person=classes.index(str(BaseClasses.PERSON)),
+                canvas=classes.index(str(BaseClasses.CANVAS)),
+                fence=classes.index(str(BaseClasses.FENCE)),
+                hole=classes.index(str(BaseClasses.HOLE)),
+            )
         )
         alert_str = DEFAULT_ALERT_STRING[ai_module]
     elif ai_module == ModuleType.PERSON_NEAR_FENCE:
         algo_config = PersonNearFenceParam(
-            classes=Classes(person=classes.index(str(BaseClasses.PERSON)),
-                            canvas=classes.index(str(BaseClasses.CANVAS)),
-                            fence=classes.index(str(BaseClasses.FENCE)),
-                            hole=classes.index(str(BaseClasses.HOLE)))
+            classes=Classes(
+                person=classes.index(str(BaseClasses.PERSON)),
+                canvas=classes.index(str(BaseClasses.CANVAS)),
+                fence=classes.index(str(BaseClasses.FENCE)),
+                hole=classes.index(str(BaseClasses.HOLE)),
+            )
         )
         alert_str = DEFAULT_ALERT_STRING[ai_module]
     elif ai_module == ModuleType.SAFE_LIFTING:
         algo_config = SafeLiftingParam(
             project_classes=[classes.index(str(BaseClasses.HOOK))],
-            alert_classes=[classes.index(str(BaseClasses.PERSON))]
+            alert_classes=[classes.index(str(BaseClasses.PERSON))],
         )
         alert_key = "alert_" + str(algo_config.project_classes[0])
         alert_config[alert_key] = DEFAULT_ALERT_STRING[ai_module][BaseClasses.HOOK]
@@ -206,11 +294,36 @@ def get_module_configs(ai_module: ModuleType,
         alert_config[alert_key] = DEFAULT_ALERT_STRING[ai_module][BaseClasses.PERSON]
 
     elif ai_module == ModuleType.MOTION_DETECTION:
-        algo_config = MotionDetectionParam(
-            classes=[i for i in range(len(classes))])
+        algo_config = MotionDetectionParam(classes=[i for i in range(len(classes))])
 
     elif ai_module == ModuleType.TRAFFIC_JAM:
         algo_config = TrafficJamParam(classes=[i for i in range(len(classes))])
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.ANTI_COLLISION:
+        algo_config = AntiCollisionParam(
+            classes=classes,
+        )
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.PPE_DETECTION:
+        algo_config = PPEDetectionParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.SAFETY_VEST:
+        algo_config = SafetyVestParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.SAFETY_HELMET:
+        algo_config = SafetyHelmetParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.OUTSIDE_WALKING:
+        algo_config = OutsideWalkingParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.NO_COVERING_SHOES:
+        algo_config = NoCoveringShoesParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.UNAUTHORIZED_ACCESS:
+        algo_config = UnauthorizedAccessParam()
+        alert_str = DEFAULT_ALERT_STRING[ai_module]
+    elif ai_module == ModuleType.ILLEGAL_PARKING:
+        algo_config = IllegalParkingParam()
         alert_str = DEFAULT_ALERT_STRING[ai_module]
 
     alert_config["alert_string"] = alert_str
@@ -219,17 +332,14 @@ def get_module_configs(ai_module: ModuleType,
     return algo_config, alert_config
 
 
-def get_model_config(model_info: Dict[str, str],
-                     weight_path: str,
-                     label_path: str) -> ModelConfig:
+def get_model_config(
+    model_info: Dict[str, str], weight_path: str, label_path: str
+) -> ModelConfig:
 
     yolo_task = get_value(YOLOTasks, model_info["task"])
     modeling_type = MAPPING_YOLO_TASK_TO_MODELING[yolo_task]
 
-    inference_config = InferenceConfig(
-        imgsz=model_info["imgsz"],
-        classes=None
-    )
+    inference_config = InferenceConfig(imgsz=model_info["imgsz"], classes=None)
     # Update model config
     model_config = ModelConfig(
         arch=model_info["model_arch"],
@@ -237,13 +347,12 @@ def get_model_config(model_info: Dict[str, str],
         inference=inference_config,
         size=model_info["model_size"],
         weight_path=weight_path,
-        label_path=label_path
+        label_path=label_path,
     )
     return model_config
 
 
-def get_main_model(ai_module: ModuleType,
-                   model_infos: Dict[str, Dict[str, str]]):
+def get_main_model(ai_module: ModuleType, model_infos: Dict[str, Dict[str, str]]):
     main_model_id = None
     if len(model_infos) > 0:
         for model_id, model_info in model_infos.items():
@@ -255,15 +364,12 @@ def get_main_model(ai_module: ModuleType,
     return main_model_id
 
 
-def get_zipfile(module: str,
-                version: str,
-                model_infos: Dict[str, Dict[str, str]]):
+def get_zipfile(module: str, version: str, model_infos: Dict[str, Dict[str, str]]):
     zip_filepath = Path(f"{module}_{version}.zip")
     models = []
     main_classes = []
     artifact_config_path = "./default_config.json"
-    main_model_id = get_main_model(ai_module=module,
-                                   model_infos=model_infos)
+    main_model_id = get_main_model(ai_module=module, model_infos=model_infos)
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
         output_dir = temp_dir_path / f"{module}_{version}"
@@ -274,8 +380,7 @@ def get_zipfile(module: str,
         weights_dir.mkdir(parents=True, exist_ok=True)
 
         for i, (model_id, model_info) in enumerate(model_infos.items()):
-            is_valid = check_class(ai_module=module,
-                                   classes=model_info["labels"])
+            is_valid = check_class(ai_module=module, classes=model_info["labels"])
             model_task = model_info["task"]
             model_path = f"weights/model_{model_task}_{i}.onnx"
             label_path = f"labels_{i}.txt"
@@ -284,13 +389,15 @@ def get_zipfile(module: str,
             # labels_txt_path.mkdir(parents=True, exist_ok=True)
 
             if is_valid:
-                classes = label_list_to_txt(label_list=model_info["labels"],
-                                            labels_txt_path=labels_txt_path,
-                                            model_class_names=model_info["names"])
+                classes = label_list_to_txt(
+                    label_list=model_info["labels"],
+                    labels_txt_path=labels_txt_path,
+                    model_class_names=model_info["names"],
+                )
 
-                model_config = get_model_config(model_info,
-                                                weight_path=model_path,
-                                                label_path=label_path)
+                model_config = get_model_config(
+                    model_info, weight_path=model_path, label_path=label_path
+                )
                 model_config.id = str(i)
                 models.append(model_config)
 
@@ -299,33 +406,34 @@ def get_zipfile(module: str,
 
                 onnx_model_filepath = model_info["onnx_path"]
                 with zipfile.ZipFile(zip_filepath, "a") as zipf:
-                    zipf.write(labels_txt_path,
-                               arcname=label_path)
-                    zipf.write(onnx_model_filepath,
-                               arcname=model_path)
+                    zipf.write(labels_txt_path, arcname=label_path)
+                    zipf.write(onnx_model_filepath, arcname=model_path)
+
         allow_change_inference = {}
         for model in models:
             if model.id:
                 allow_change_inference[model.id] = ["conf_threshold", "iou_threshold"]
+
         allow_change = AllowChange(
             inference=allow_change_inference,
-            algorithm=get_algorithm_allow_change(ai_module=module)
+            algorithm=get_algorithm_allow_change(ai_module=module),
+            alerts=get_algorithm_alert_allow_change(ai_module=module) or [],
         )
 
         algo_config, alert_config = get_module_configs(
-            ai_module=module, classes=main_classes)
+            ai_module=module, classes=main_classes
+        )
         package_config = ModelingConfig(
             model=models,
             alerts=alert_config,
             algorithm=algo_config,
-            allow_change=allow_change
+            allow_change=allow_change,
         )
 
         with open(artifact_config_path, "w") as f:
             json.dump(package_config.model_dump(), f, indent=4)
 
         with zipfile.ZipFile(zip_filepath, "a") as zipf:
-            zipf.write(artifact_config_path,
-                       arcname="configs/default_config.json")
+            zipf.write(artifact_config_path, arcname="configs/default_config.json")
 
     return str(zip_filepath.absolute()), str(zip_filepath), artifact_config_path
