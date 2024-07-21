@@ -69,9 +69,8 @@ def train_yolo(
         data=dataset_filepath,
         imgsz=imgsz,
         epochs=epochs,
-        cache="ram",
-        batch=batch_size,
         cache=False,
+        batch=batch_size,
         **kwargs,
     )
 
