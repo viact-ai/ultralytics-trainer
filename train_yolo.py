@@ -19,6 +19,11 @@ def get_model_name_from_choice(model_name: str, model_variant: str) -> str:
         ("YOLOv8", "medium"): "yolov8m",
         ("YOLOv8", "large"): "yolov8l",
         ("YOLOv8", "extra_large"): "yolov8x",
+        ("YOLOv10", "nano"): "yolov10n",
+        ("YOLOv10", "small"): "yolov10s",
+        ("YOLOv10", "medium"): "yolov10m",
+        ("YOLOv10", "large"): "yolov10l",
+        ("YOLOv10", "extra_large"): "yolov10x",
     }
 
     return mapping.get((model_name, model_variant), "")
