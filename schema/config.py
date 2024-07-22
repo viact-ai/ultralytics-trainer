@@ -6,10 +6,6 @@ from pydantic import BaseModel
 from enums.config import ModelingType
 
 
-class AlertConfig(BaseModel):
-    alert_string: str
-
-
 class InferenceConfig(BaseModel):
     imgsz: list = None
     conf_threshold: float = 0.25
@@ -45,3 +41,11 @@ class ModelingConfig(BaseModel):
     alerts: dict = None
     algorithm: dict | None = {}
     allow_change: AllowChange | None = {}
+
+
+class AlertConfig(BaseModel):
+    alert_string: str = "ALERT"
+    FPS: int = 5
+    DURATION: int = 4
+    PERCENTAGE_OF_ALERT_FRAMES: float = 0.5
+    SEND_ALERT_FREQUENT: int = 0

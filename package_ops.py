@@ -1,14 +1,13 @@
 import argparse
-
-from typing import Dict, Any, List
 import json
-
+from typing import Any, Dict, List
 
 from clearml import Task
-from utils.security import encrypt_model
-from enums.config import ModuleType, get_value
+
 import utils.export as export_utils
+from enums.config import ModuleType, get_value
 from schema.export import ModelInfo
+from utils.security import encrypt_model
 
 
 def package_ops(

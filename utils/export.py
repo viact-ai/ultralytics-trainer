@@ -327,6 +327,10 @@ def get_module_configs(ai_module: ModuleType, classes: list):
         alert_str = DEFAULT_ALERT_STRING[ai_module]
 
     alert_config["alert_string"] = alert_str
+    _default_alert_config = AlertConfig().model_dump()
+    _default_alert_config.update(alert_config)
+    alert_config = _default_alert_config
+
     if not isinstance(algo_config, dict):
         algo_config = algo_config.model_dump()
     return algo_config, alert_config
