@@ -8,7 +8,7 @@ from Crypto.Cipher import AES
 
 StrPath = str | Path
 
-MODEL_ENCRYPTION_SECURE_KEY = environ.get("MODEL_ENCRYPTION_SECURE_KEY")
+MODEL_ENCRYPTION_SECURE_KEY = environ.get("MODEL_ENCRYPTION_SECURE_KEY", "")
 assert MODEL_ENCRYPTION_SECURE_KEY != "", "MODEL_ENCRYPTION_SECURE_KEY must be provided"
 
 
