@@ -1,0 +1,22 @@
+from pydantic import BaseModel
+
+
+class SafetyVestParam(BaseModel):
+    PERSON_INDEX: int = 0
+    NO_VEST_INDEX: int = 4
+    PERCENT_OVERLAP: float = 0.7
+
+
+SAFETY_VEST_ALLOW_CHANGES = [
+    "CLASS_ID",
+    "CLASSIFY_CONFIDENCE_THRESHOLD",
+    "DETECTION_CONFIDENCE_THRESHOLD",
+]
+
+
+SAFETY_VEST_ALERT_ALLOW_CHANGES = [
+    "FPS",
+    "DURATION",
+    "PERCENTAGE_OF_ALERT_FRAMES",
+    "SEND_ALERT_FREQUENT"
+]

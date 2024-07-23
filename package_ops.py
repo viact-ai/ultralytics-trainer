@@ -1,14 +1,17 @@
+import dotenv
+
+dotenv.load_dotenv()
+
 import argparse
-
-from typing import Dict, Any, List
 import json
-
+from typing import Any, Dict, List
 
 from clearml import Task
-from utils.security import encrypt_model
-from enums.config import ModuleType, get_value
+
 import utils.export as export_utils
+from enums.config import ModuleType, get_value
 from schema.export import ModelInfo
+from utils.security import encrypt_model
 
 
 def package_ops(
@@ -65,6 +68,7 @@ if __name__ == "__main__":
 
     models = []
     if args.models is not None:
+        print(f"Models: {args.models}")
         model_dict: list = json.loads(args.models)
         models = [ModelInfo(**model) for model in model_dict]
 
