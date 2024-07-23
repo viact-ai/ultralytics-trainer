@@ -1,3 +1,7 @@
+import dotenv
+
+dotenv.load_dotenv()
+
 import argparse
 import json
 from typing import Any, Dict, List
@@ -64,6 +68,7 @@ if __name__ == "__main__":
 
     models = []
     if args.models is not None:
+        print(f"Models: {args.models}")
         model_dict: list = json.loads(args.models)
         models = [ModelInfo(**model) for model in model_dict]
 

@@ -193,43 +193,55 @@ def get_algorithm_allow_change(ai_module: ModuleType):
 def get_algorithm_alert_allow_change(ai_module: ModuleType):
     # if ai_module
 
-    if ai_module == ModuleType.LIFTING_LOAD_DANGER_ZONE:
-        return None
-    if ai_module == ModuleType.OPEN_EDGE:
-        return None 
-    if ai_module == ModuleType.PERSON_NEAR_FENCE:
-        return PERSON_NEAR_FENCE_ALERT_ALLOW_CHANGES
-    if ai_module == ModuleType.SAFE_LIFTING:
-        return None
-    if ai_module == ModuleType.MOTION_DETECTION:
-        return None
-    if ai_module == ModuleType.TRAFFIC_JAM:
-        return None 
-    if ai_module == ModuleType.ANTI_COLLISION:
-        return None
-    if ai_module == ModuleType.PPE_DETECTION:
-        return None
-    if ai_module == ModuleType.SAFETY_VEST:
-        return SAFETY_VEST_ALERT_ALLOW_CHANGES 
-    if ai_module == ModuleType.SAFETY_HELMET:
-        return SAFETY_HELMET_ALERT_ALLOW_CHANGES
-    if ai_module == ModuleType.OUTSIDE_WALKING:
-        return None
-    if ai_module == ModuleType.NO_COVERING_SHOES:
-        return None 
-    if ai_module == ModuleType.UNAUTHORIZED_ACCESS:
-        return None 
-    if ai_module == ModuleType.ILLEGAL_PARKING:
-        return None 
+    # if ai_module == ModuleType.LIFTING_LOAD_DANGER_ZONE:
+    #     return None
+    # if ai_module == ModuleType.OPEN_EDGE:
+    #     return None 
+    # if ai_module == ModuleType.PERSON_NEAR_FENCE:
+    #     return PERSON_NEAR_FENCE_ALERT_ALLOW_CHANGES
+    # if ai_module == ModuleType.SAFE_LIFTING:
+    #     return None
+    # if ai_module == ModuleType.MOTION_DETECTION:
+    #     return None
+    # if ai_module == ModuleType.TRAFFIC_JAM:
+    #     return None 
+    # if ai_module == ModuleType.ANTI_COLLISION:
+    #     return None
+    # if ai_module == ModuleType.PPE_DETECTION:
+    #     return None
+    # if ai_module == ModuleType.SAFETY_VEST:
+    #     return SAFETY_VEST_ALERT_ALLOW_CHANGES 
+    # if ai_module == ModuleType.SAFETY_HELMET:
+    #     return SAFETY_HELMET_ALERT_ALLOW_CHANGES
+    # if ai_module == ModuleType.OUTSIDE_WALKING:
+    #     return None
+    # if ai_module == ModuleType.NO_COVERING_SHOES:
+    #     return None 
+    # if ai_module == ModuleType.UNAUTHORIZED_ACCESS:
+    #     return None 
+    # if ai_module == ModuleType.ILLEGAL_PARKING:
+    #     return None 
     
-    return None
+    # return None
+
+    return [
+        "alert_string",
+        "FPS",
+        "DURATION",
+        "PERCENTAGE_OF_ALERT_FRAMES",
+        "SEND_ALERT_FREQUENT",
+    ]
 
 
 def check_class(ai_module: ModuleType, classes: List = None):
     if len(classes) == 0:
+        print("classes is empty")
         return True
+
     count = 0
     neccessary_classes = MODULE_CLASSES[ai_module]
+    print("neccessary_classes:", neccessary_classes)
+
     if isinstance(neccessary_classes, list) and len(neccessary_classes):
         for cls in neccessary_classes:
             if str(cls) in classes:
@@ -374,9 +386,11 @@ def get_zipfile(module: str, version: str, model_infos: Dict[str, Dict[str, str]
     main_classes = []
     artifact_config_path = "./default_config.json"
     main_model_id = get_main_model(ai_module=module, model_infos=model_infos)
+    print("Main model id:", main_model_id)
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
         output_dir = temp_dir_path / f"{module}_{version}"
+        print("Output dir:", output_dir)
 
         configs_dir = output_dir / "configs"
         configs_dir.mkdir(parents=True, exist_ok=True)
@@ -385,6 +399,7 @@ def get_zipfile(module: str, version: str, model_infos: Dict[str, Dict[str, str]
 
         for i, (model_id, model_info) in enumerate(model_infos.items()):
             is_valid = check_class(ai_module=module, classes=model_info["labels"])
+            print("Check class is valid:", is_valid)
             model_task = model_info["task"]
             model_path = f"weights/model_{model_task}_{i}.onnx"
             label_path = f"labels_{i}.txt"
@@ -398,10 +413,12 @@ def get_zipfile(module: str, version: str, model_infos: Dict[str, Dict[str, str]
                     labels_txt_path=labels_txt_path,
                     model_class_names=model_info["names"],
                 )
+                print("Classes:", classes)
 
                 model_config = get_model_config(
                     model_info, weight_path=model_path, label_path=label_path
                 )
+                print("Model config:", model_config)
                 model_config.id = str(i)
                 models.append(model_config)
 
@@ -413,6 +430,8 @@ def get_zipfile(module: str, version: str, model_infos: Dict[str, Dict[str, str]
                     zipf.write(labels_txt_path, arcname=label_path)
                     zipf.write(onnx_model_filepath, arcname=model_path)
 
+                print("Model write to:", zip_filepath)
+
         allow_change_inference = {}
         for model in models:
             if model.id:
@@ -423,21 +442,27 @@ def get_zipfile(module: str, version: str, model_infos: Dict[str, Dict[str, str]
             algorithm=get_algorithm_allow_change(ai_module=module),
             alerts=get_algorithm_alert_allow_change(ai_module=module) or [],
         )
+        print("Allow change:", allow_change)
 
         algo_config, alert_config = get_module_configs(
             ai_module=module, classes=main_classes
         )
+        print("Algo config:", algo_config)
+        print("Alert config:", alert_config)
         package_config = ModelingConfig(
             model=models,
             alerts=alert_config,
             algorithm=algo_config,
             allow_change=allow_change,
         )
+        print("Package config:", package_config)
 
         with open(artifact_config_path, "w") as f:
             json.dump(package_config.model_dump(), f, indent=4)
+            print("Config write to:", artifact_config_path)
 
         with zipfile.ZipFile(zip_filepath, "a") as zipf:
             zipf.write(artifact_config_path, arcname="configs/default_config.json")
+            print("Config write to zip file")
 
     return str(zip_filepath.absolute()), str(zip_filepath), artifact_config_path

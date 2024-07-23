@@ -1,0 +1,18 @@
+PPE: dcdfc64507bb4b108fece3aff9803f50
+illegal-parking: 46e5b045eba4433aa06c34e62a5ed19b
+no-covering-shoes: 5b469c87dfbc4a3599ce5848d5dc3a86
+open-edge: 2a3417539588463eb8f0d83620212834
+person-near-edge: 723aa41c4a93485ba2b0a2cfc9e499e8
+anti-collision: fc225c9bdd214db0ba386bf0ea31e880
+
+outside-walking:
+  - detect: fb9a40ce346e4baebc3341920b30f02a
+  - classify: 2d3db53648fc4e08be1c3043588db8d3
+
+lifting-load-danger-zone:
+  - detect: 018d0c5147dc44bea0e064f0864a10de
+  - classify: 59a75934026141cb9a8471748d73a925
+
+unauthorized_access:
+  - detect: 699e08b0163d4b49bcfb2f591cf354df
+  - classify: 26e6db6718b24113b5d752350e7d5e36

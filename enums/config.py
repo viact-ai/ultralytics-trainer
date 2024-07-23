@@ -30,11 +30,49 @@ class BaseType(str, Enum):
 
 
 class BaseClasses(BaseType):
+    CLASS_0 = "0"
+    CLASS_1 = "1"
+    BLACK = "black"
+    BLUE = "blue"
+    BOOM_LIFT = "boom_lift"
+    BUCKET = "bucket"
+    BULLDOZER = "bulldozer/backhoe/loader"
+    BUS = "bus"
     CANVAS = "canvas"
+    CAR = "car"
+    CONCRETE_MIXER = "concrete_mixer"
+    EXCAVATOR = "excavator"
+    FACE = "face"
     FENCE = "fence"
+    FRAME = "frame"
+    GREEN = "green"
+    HELMET = "helmet"
     HOLE = "hole"
     HOOK = "hook"
+    HOUSEHOLD_SHELTER = "household shelter"
+    MACHINERY = "machinery"
+    MOBILE_CRANE = "mobile_crane"
+    MOTORCYCLE = "motorcycle"
+    NO_HELMET = "no_helmet"
+    NO_SHOE = "no_shoe"
+    NO_VEST = "no_vest"
+    ORANGE = "orange"
+    OTHERS = "others"
     PERSON = "person"
+    PRECAST_PLANKS = "precast plank"
+    RED = "red"
+    ROLLER = "roller"
+    SCISSOR_LIFT = "scissor_lift"
+    SHOE = "shoe"
+    STEEL_PLATE = "steel plate"
+    STICK = "stick"
+    TRUCK = "truck"
+    UNDERFINE_IMG = "underfine_img"
+    VAN = "van"
+    VEST = "vest"
+    WALL = "wall"
+    WHEEL = "wheel"
+
 
 
 class ModuleType(BaseType):
@@ -55,6 +93,7 @@ class ModuleType(BaseType):
     NO_COVERING_SHOES = "no-covering-shoes"
     UNAUTHORIZED_ACCESS = "unauthorized-access"
     ILLEGAL_PARKING = "illegal-parking"
+
 
 
 class ModelingType(BaseType):
@@ -121,12 +160,22 @@ DEFAULT_ALERT_STRING: Dict[str, Union[str, dict]] = {
 MODULE_CLASSES = {
     ModuleType.DANGER_ZONE: [BaseClasses.PERSON
                              ],
-    ModuleType.LIFTING_LOAD_DANGER_ZONE:
-    {"detect": [
-        BaseClasses.PERSON,
-        BaseClasses.HOOK,
-    ],
-        "classify": ["0", "1"]
+    ModuleType.LIFTING_LOAD_DANGER_ZONE: {
+        "detect": [
+            BaseClasses.PERSON,
+            BaseClasses.HOOK,
+            BaseClasses.FRAME,
+            BaseClasses.WALL,
+            BaseClasses.BUCKET,
+            BaseClasses.PRECAST_PLANKS,
+            BaseClasses.STICK,
+            BaseClasses.HOUSEHOLD_SHELTER,
+            BaseClasses.STEEL_PLATE,
+        ],
+        "classify": [
+            BaseClasses.CLASS_0,
+            BaseClasses.CLASS_1,
+        ],
     },
     ModuleType.OPEN_EDGE: [
         BaseClasses.PERSON,
@@ -144,4 +193,77 @@ MODULE_CLASSES = {
         BaseClasses.HOLE,
         BaseClasses.CANVAS,
     ],
+    ModuleType.ANTI_COLLISION: [
+        BaseClasses.CAR,
+        BaseClasses.VAN,
+        BaseClasses.BUS,
+        BaseClasses.TRUCK,
+        BaseClasses.MOTORCYCLE,
+        BaseClasses.PERSON,
+        BaseClasses.FACE,
+        BaseClasses.WHEEL,
+        BaseClasses.EXCAVATOR,
+        BaseClasses.CONCRETE_MIXER,
+        BaseClasses.BULLDOZER,
+        BaseClasses.ROLLER,
+        BaseClasses.BOOM_LIFT,
+        BaseClasses.SCISSOR_LIFT,
+        BaseClasses.MOBILE_CRANE,
+        BaseClasses.MACHINERY,
+    ],
+    ModuleType.PPE_DETECTION: [
+        BaseClasses.PERSON,
+        BaseClasses.SHOE,
+        BaseClasses.NO_SHOE,
+        BaseClasses.VEST,
+        BaseClasses.NO_VEST,
+        BaseClasses.HELMET,
+        BaseClasses.NO_HELMET,
+    ],
+    ModuleType.SAFETY_HELMET: [
+        BaseClasses.PERSON,
+        BaseClasses.SHOE,
+        BaseClasses.NO_SHOE,
+        BaseClasses.VEST,
+        BaseClasses.NO_VEST,
+        BaseClasses.HELMET,
+        BaseClasses.NO_HELMET,
+    ],
+    ModuleType.SAFETY_VEST: [
+        BaseClasses.PERSON,
+        BaseClasses.SHOE,
+        BaseClasses.NO_SHOE,
+        BaseClasses.VEST,
+        BaseClasses.NO_VEST,
+        BaseClasses.HELMET,
+        BaseClasses.NO_HELMET,
+    ],
+    ModuleType.UNAUTHORIZED_ACCESS: {
+        "detect": [BaseClasses.PERSON],
+        "classify": [
+            BaseClasses.BLACK,
+            BaseClasses.BLUE,
+            BaseClasses.GREEN,
+            BaseClasses.ORANGE,
+            BaseClasses.RED,
+            BaseClasses.UNDERFINE_IMG,
+        ],
+    },
+    ModuleType.ILLEGAL_PARKING: [
+        BaseClasses.TRUCK,
+    ],
+    ModuleType.OUTSIDE_WALKING: {
+        "detect": [
+            BaseClasses.PERSON,
+        ],
+        "classify": [
+            BaseClasses.ORANGE,
+            BaseClasses.OTHERS,
+        ]
+    },
+    ModuleType.NO_COVERING_SHOES: [
+        BaseClasses.PERSON,
+        BaseClasses.SHOE,
+        BaseClasses.NO_SHOE,
+    ]
 }
