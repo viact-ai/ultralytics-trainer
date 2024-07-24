@@ -71,7 +71,6 @@ def train_yolo(
         epochs=epochs,
         cache=False,
         batch=batch_size,
-        cache=False,
         **kwargs,
     )
 
