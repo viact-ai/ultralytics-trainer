@@ -140,26 +140,27 @@ if __name__ == "__main__":
     args.add_argument(
         "--lr0",
         default=0.01,
+        type=float,
         help=(
             "Initial learning rate (i.e. SGD=1E-2, Adam=1E-3)."
             " Adjusting this value is crucial for the optimization"
             " process, influencing how rapidly model weights are updated."
         ),
-        type=float,
     )
     args.add_argument(
         "--lrf",
         default=0.1,
+        type=float,
         help=(
             "Initial learning rate (i.e. SGD=1E-2, Adam=1E-3)."
             " Adjusting this value is crucial for the optimization"
             " process, influencing how rapidly model weights are updated."
         ),
-        type=float,
     )
     args.add_argument(
         "--momentum",
         default=0.937,
+        type=float,
         help=(
             "Momentum factor for SGD or beta1 for Adam optimizers,"
             " influencing the incorporation of past gradients in the current update."
@@ -168,6 +169,7 @@ if __name__ == "__main__":
     args.add_argument(
         "--weight_decay",
         default=0.0005,
+        type=float,
         help="L2 regularization term, penalizing large weights to prevent overfitting.",
     )
     args.add_argument(
@@ -183,6 +185,7 @@ if __name__ == "__main__":
     args.add_argument(
         "--warmup_momentum",
         default=0.8,
+        type=float,
         help=(
             "Initial momentum for warmup phase, gradually adjusting"
             " to the set momentum over the warmup period."
@@ -191,6 +194,7 @@ if __name__ == "__main__":
     args.add_argument(
         "--box",
         default=7.5,
+        type=float,
         help=(
             "Weight of the box loss component in the loss function,"
             " influencing how much emphasis is placed on accurately"
@@ -200,6 +204,7 @@ if __name__ == "__main__":
     args.add_argument(
         "--cls",
         default=0.5,
+        type=float,
         help=(
             "Weight of the classification loss in the total loss function,"
             " affecting the importance of correct class prediction relative to other components."
@@ -208,6 +213,7 @@ if __name__ == "__main__":
     args.add_argument(
         "--dropout",
         default=0.0,
+        type=float,
         help=(
             "Dropout rate for regularization in classification tasks,"
             " preventing overfitting by randomly omitting units during training."

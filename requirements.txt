@@ -1,11 +1,10 @@
 clearml==1.12.1
 clearml[s3]==1.12.1
 boto3>=1.9
-ultralytics==8.2.61
+ultralytics==8.3.3
 onnx>=1.12.0
 pycryptodome==3.18.0
 cryptography==41.0.2
 # onnxruntime==1.16.1
 pydantic==2.4.2
 python-dotenv==1.0.1
-
